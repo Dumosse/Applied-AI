@@ -5,12 +5,19 @@ from datetime import datetime
 
 newsAPI_Key = '8ad3de95c6844b01967e372301a987c1'
 
-summarizer = pipeline('summarization', model="facebook/bart-large-cnn", framework="pt")
+try:
+    summarizer = pipeline('summarization', model="facebook/bart-large-cnn", framework="pt")
+except Exception as e:
+    st.error(f"Error initializing summarizer: {e}")
+    raise
 
 @st.cache_data(ttl=3600)
 def fetch_news_articles(api_key, domain, from_date, to_date, sortBy, language='en'):
     url = f'https://newsapi.org/v2/everything?domains={domain}&from={from_date}&to={to_date}&sortBy={sortBy}&language={language}&apiKey={api_key}'
     response = requests.get(url)
+    if response.status_code != 200:
+        st.error(f"Error fetching articles: {response.status_code}")
+        return []
     articles = response.json().get('articles', [])
     return articles
 
@@ -19,8 +26,12 @@ def prepare_article_text(article):
     return ' '.join([section for section in sections if section])
 
 def summarize_article(article_text):
-    summary = summarizer(article_text, max_length=130, min_length=30, do_sample=False)[0]['summary_text']
-    return summary
+    try:
+        summary = summarizer(article_text, max_length=130, min_length=30, do_sample=False)[0]['summary_text']
+        return summary
+    except Exception as e:
+        st.error(f"Error summarizing article: {e}")
+        return "Summary not available."
 
 def main():
     st.set_page_config(page_title="Smart News Digest", layout="wide")
