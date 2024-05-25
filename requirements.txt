@@ -5,3 +5,4 @@ torch
 sentencepiece
 torchvision
 pipeline
+huggingface-hub
