@@ -1,7 +1,7 @@
 transformers
 streamlit
 requests
-torch==2.3.0
+torch>=1.8.0
 sentencepiece
 torchvision
 pipeline
